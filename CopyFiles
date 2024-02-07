@@ -1,7 +1,7 @@
 #Parameters
 param(
-    [string]$source = "C:\temp",
-    [string]$destination = "c:\temp\destination"
+    [string]$src = "C:\temp",
+    [string]$dest = "c:\temp\dest"
 )
 
 #Functions
@@ -21,11 +21,11 @@ function Check-Folder([string]$path, [switch]$create) {
 }
 
 #Create a function named DisplayFolderStatistics to display folder statistics for a directory/path that is passed
-#to it. Output should include the name of the folder, number of files in the folder, and total size of all files in
+#to it. Output should include the name of the folder, number of docs in the folder, and total size of all docs in
 #that directory.
 function Display-FolderStatus([string]$path){
-    $files = Get-ChildItem $path -Recurse | Where-Object {!$_.PSIsContainer}
-    $totals = $files | Measure-Object -Property Length -Sum
+    $docs = Get-ChildItem $path -Recurse | Where-Object {!$_.PSIsContainer}
+    $totals = $docs | Measure-Object -Property Length -Sum
     $stats = "" | Select-Object Path, Count, Size
     $stats.Path = $path
     $stats.Count = $totals.Count
@@ -34,35 +34,35 @@ function Display-FolderStatus([string]$path){
 }
 
 #Main processing
-#a) Test for existence of the source folder (using the CheckFolder function).
-$sourceExists = Check-Folder $source
-if (!$sourceExists) {
-    Write-Host "The source directory is not found. Script cannot continue."
+#a) Test for existence of the src folder (using the CheckFolder function).
+$srcExists = Check-Folder $src
+if (!$srcExists) {
+    Write-Host "The src directory is not found. Script cannot continue."
     Exit
 }
 
-#b) Test for the existence of the destination folder; create it if it is not found (using the CheckFolder function
+#b) Test for the existence of the dest folder; create it if it is not found (using the CheckFolder function
 #with the –create switch).
-$destinationExists = Check-Folder $destination -create
-if (!$destinationExists) {
-    Write-Host "The destination directory is not found. Script cannot continue."
+$destExists = Check-Folder $dest -create
+if (!$destExists) {
+    Write-Host "The dest directory is not found. Script cannot continue."
     Exit
 }
 
-#c) Copy each file to the appropriate destination.
-#get all the files that need to be copied
-$files = Get-ChildItem $source -Recurse | Where-Object {!$_.PSIsContainer}
+#c) Copy each file to the appropriate dest.
+#get all the docs that need to be copied
+$docs = Get-ChildItem $src -Recurse | Where-Object {!$_.PSIsContainer}
 
 #c-i) Display a message when copying a file. The message should list where the file is being
 #moved from and where it is being moved to.
-foreach ($file in $files) {
+foreach ($file in $docs) {
     $ext = $file.Extension.Replace(".", "")
-    $extDestDir = "$destination\$ext"
+    $extDestDir = "$dest\$ext"
     
     #check if dest folder exists
     $extDestDirExists = Check-Folder $extDestDir -create
     if (!$extDestDirExists) {
-        Write-Host "The destination directory is not found. Script cannot continue."
+        Write-Host "The dest directory is not found. Script cannot continue."
         Exit
     }
     #copy file
@@ -70,7 +70,7 @@ foreach ($file in $files) {
 }
 
 #d) Display each target folder name with the file count and byte count for each folder.
-$dirs = Get-ChildItem $destination | Where-Object {$_.PSIsContainer}
+$dirs = Get-ChildItem $dest | Where-Object {$_.PSIsContainer}
 foreach ($dir in $dirs) {
     Display-FolderStatus $dir.FullName
 }
